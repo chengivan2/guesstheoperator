@@ -119,6 +119,24 @@ body {
     inset 0 0 15px rgba(0, 240, 255, 0.2);
   transition: all 0.3s ease;
   cursor: default;
+  position: relative;
+}
+
+.bubble-number {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--neon-blue);
+  color: var(--background);
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px var(--neon-blue);
 }
 
 .operator-bubble.correct {

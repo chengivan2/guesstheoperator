@@ -274,17 +274,36 @@ export default function GameCanvas() {
     };
   }, [gameState, feedback, equation, startNewRound, isProcessing]);
 
-  // Keyboard controls for pause
+  // Get bubbles sorted by x position (left to right)
+  const sortedBubbles = [...bubbles]
+    .filter((b) => b.y <= 110)
+    .sort((a, b) => a.x - b.x);
+
+  // Keyboard controls for pause and number keys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && gameState === "playing") {
+      if (gameState !== "playing") return;
+
+      if (e.key === "Escape") {
         setGameState("paused");
+        return;
+      }
+
+      // Number keys 1-3 to select bubbles
+      if (["1", "2", "3"].includes(e.key) && !feedback && !isProcessing) {
+        const index = parseInt(e.key) - 1;
+        const visibleBubbles = [...bubbles]
+          .filter((b) => b.y <= 110)
+          .sort((a, b) => a.x - b.x);
+        if (visibleBubbles[index]) {
+          handleBubbleClick(visibleBubbles[index].id);
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [gameState]);
+  }, [gameState, bubbles, feedback, isProcessing, handleBubbleClick]);
 
   // Render start screen
   if (gameState === "start") {
@@ -405,33 +424,32 @@ export default function GameCanvas() {
       )}
 
       {/* Falling Bubbles */}
-      {bubbles
-        .filter((b) => b.y <= 110) // Only render visible bubbles
-        .map((bubble) => (
-          <button
-            key={bubble.id}
-            className={`operator-bubble falling-bubble ${
-              feedback?.bubbleId === bubble.id
-                ? feedback.type === "correct"
-                  ? "correct"
-                  : "wrong"
-                : ""
-            } ${popAnimation === bubble.id ? "popping" : ""} ${bubble.paused ? "bubble-paused" : ""}`}
-            style={{
-              left: `${bubble.x}%`,
-              top: `${bubble.y}%`,
-              transform: "translate(-50%, -50%)",
-            }}
-            onClick={() => handleBubbleClick(bubble.id)}
-            onMouseEnter={() => handleBubbleHover(bubble.id, true)}
-            onMouseLeave={() => handleBubbleHover(bubble.id, false)}
-            onTouchStart={() => handleBubbleHover(bubble.id, true)}
-            onTouchEnd={() => handleBubbleHover(bubble.id, false)}
-            disabled={!!feedback || isProcessing}
-          >
-            {bubble.operator}
-          </button>
-        ))}
+      {sortedBubbles.map((bubble, index) => (
+        <button
+          key={bubble.id}
+          className={`operator-bubble falling-bubble ${
+            feedback?.bubbleId === bubble.id
+              ? feedback.type === "correct"
+                ? "correct"
+                : "wrong"
+              : ""
+          } ${popAnimation === bubble.id ? "popping" : ""} ${bubble.paused ? "bubble-paused" : ""}`}
+          style={{
+            left: `${bubble.x}%`,
+            top: `${bubble.y}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+          onClick={() => handleBubbleClick(bubble.id)}
+          onMouseEnter={() => handleBubbleHover(bubble.id, true)}
+          onMouseLeave={() => handleBubbleHover(bubble.id, false)}
+          onTouchStart={() => handleBubbleHover(bubble.id, true)}
+          onTouchEnd={() => handleBubbleHover(bubble.id, false)}
+          disabled={!!feedback || isProcessing}
+        >
+          <span className="bubble-number">{index + 1}</span>
+          {bubble.operator}
+        </button>
+      ))}
 
       {/* Pause Dialog */}
       {gameState === "paused" && (
@@ -564,6 +582,10 @@ function HelpDialog({ onClose }: { onClose: () => void }) {
           <h3>💻 PC / Laptop</h3>
           <ul>
             <li>Click on the correct bubble</li>
+            <li>
+              Press <strong>1</strong>, <strong>2</strong>, or{" "}
+              <strong>3</strong> to select bubbles
+            </li>
             <li>Hover to pause a bubble</li>
             <li>Press Escape to pause game</li>
           </ul>
