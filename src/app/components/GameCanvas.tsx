@@ -112,7 +112,7 @@ export default function GameCanvas() {
   const [popAnimation, setPopAnimation] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const livesRef = useRef(lives);
   const difficultyRef = useRef(difficulty);
 
@@ -427,13 +427,12 @@ export default function GameCanvas() {
       {sortedBubbles.map((bubble, index) => (
         <button
           key={bubble.id}
-          className={`operator-bubble falling-bubble ${
-            feedback?.bubbleId === bubble.id
+          className={`operator-bubble falling-bubble ${feedback?.bubbleId === bubble.id
               ? feedback.type === "correct"
                 ? "correct"
                 : "wrong"
               : ""
-          } ${popAnimation === bubble.id ? "popping" : ""} ${bubble.paused ? "bubble-paused" : ""}`}
+            } ${popAnimation === bubble.id ? "popping" : ""} ${bubble.paused ? "bubble-paused" : ""}`}
           style={{
             left: `${bubble.x}%`,
             top: `${bubble.y}%`,
